@@ -134,6 +134,7 @@ export const chatReducer = (state = initialState, action) => {
 
     //-------------- SEND IMAGE REQUEST
     case ChatTypes.SEND_IMAGES_REQUEST: {
+      console.log('SEND_IMAGES_REQUEST');
       return {
         ...state,
         isLoading: true,
@@ -149,7 +150,8 @@ export const chatReducer = (state = initialState, action) => {
     case ChatTypes.SEND_IMAGES_FAILURE: {
       return {
         ...state,
-        isLoading: true,
+        isLoading: false,
+        error: action.payload,
       };
     }
 
@@ -168,7 +170,7 @@ export const chatReducer = (state = initialState, action) => {
       };
     }
     case ChatTypes.SEND_MESSAGES_FAILURE: {
-      alert('file gửi không lớn hơn 10MB');
+      alert('file gửi không lớn hơn 10MB', 'Thông báo');
 
       return {
         ...state,
@@ -178,6 +180,7 @@ export const chatReducer = (state = initialState, action) => {
 
     //-------------- SEND FILE REQUEST
     case ChatTypes.SEND_FILE_REQUEST: {
+      console.log('SEND_FILE_REQUEST');
       return {
         ...state,
         isLoading: true,

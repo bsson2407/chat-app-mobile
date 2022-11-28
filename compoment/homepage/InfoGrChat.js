@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
     width: '50%',
     height: 200,
     alignSelf: 'center',
+    borderRadius: 90,
   },
   infoRoom: {
     width: '100%',

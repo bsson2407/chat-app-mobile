@@ -28,6 +28,38 @@ export default function FriendTab({ navigation }) {
   useEffect(() => {
     dispatch(getAllConversationByUserRequest(userCurrent._id));
   }, [userCurrent]);
+
+  const renderSingleConversation = (conversation) => {
+    const chatWithUser = conversation.members.filter(
+      (item) => item.idUser._id !== userCurrent._id
+    )[0];
+
+    const flag = conversation.lastMessage
+      ? conversation.lastMessage.seen.includes(userCurrent._id)
+      : false;
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          handleChat(chatWithUser, conversation);
+          navigation.navigate('ChatBox');
+        }}
+      >
+        <View style={styles.container2}>
+          <View style={styles.imgStyple}>
+            <Image
+              style={styles.myImg}
+              source={{ uri: chatWithUser.idUser.avatar }}
+            ></Image>
+          </View>
+          <View style={styles.myValue}>
+            <View style={styles.myName}>
+              <Text style={styles.nameName}>{chatWithUser.idUser.name}</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
   return (
     <View style={styles.container}>
       <View style={styles.findBox}>
@@ -40,25 +72,7 @@ export default function FriendTab({ navigation }) {
         numColumns={1}
         keyExtractor={({ id }, index) => id}
         renderItem={({ item }) =>
-          item.type === 'single' && (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('', { message: item.name })}
-            >
-              <View style={styles.container2}>
-                <View style={styles.imgStyple}>
-                  <Image
-                    style={styles.myImg}
-                    source={{ uri: item.idUser.avatar }}
-                  ></Image>
-                </View>
-                <View style={styles.myValue}>
-                  <View style={styles.myName}>
-                    <Text style={styles.nameName}>{item.idUser.name}</Text>
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
-          )
+          item.type === 'single' && renderSingleConversation(item)
         }
       />
     </View>

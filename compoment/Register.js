@@ -5,6 +5,7 @@ import {
   View,
   TouchableOpacity,
   TextInput,
+  Image,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
@@ -46,8 +47,15 @@ export default function Register({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.bigText}>Welcome to "HiChat"</Text>
-      <Text style={styles.smallText}>Let’s help you sign up..</Text>
+      <Image
+        style={{
+          width: 150,
+          height: 150,
+          marginBottom: 30,
+          borderRadius: 50,
+        }}
+        source={require('../assets/logo.png')}
+      />
       <TextInput
         style={styles.inputText}
         onChangeText={(value) => setName(value)}

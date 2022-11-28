@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // -------------- LOGIN
 export const loginUserRequest = (data, callback) => {
+  console.log('loginUserRequest', data);
+
   return {
     type: UserTypes.LOGIN_USER_REQUEST,
     payload: data,
@@ -11,6 +13,7 @@ export const loginUserRequest = (data, callback) => {
 };
 
 export const loginUserSuccess = (data) => {
+  console.log('loginUserSuccess', data);
   return {
     type: UserTypes.LOGIN_USER_SUCCESS,
     payload: data,
@@ -18,6 +21,7 @@ export const loginUserSuccess = (data) => {
 };
 
 export const loginUserFailure = (error) => {
+  console.log('loginUserFailure', error);
   return {
     type: UserTypes.LOGIN_USER_FAILURE,
     payload: error,
@@ -134,14 +138,15 @@ export const checkOtpFailure = (error) => {
 };
 
 // -------------- UPDATE PASWORD
-export const updatePasswordRequest = (dataPass) => {
+export const updatePasswordRequest = (data, callback) => {
   return {
     type: UserTypes.UPDATE_PASSWORD_REQUEST,
     payload: data,
+    callback,
   };
 };
 
-export const updatePasswordSuccess = (dataPass) => {
+export const updatePasswordSuccess = (data) => {
   return {
     type: UserTypes.UPDATE_PASSWORD_SUCCESS,
     payload: data,
@@ -337,6 +342,7 @@ export const clearUserState = () => {
 
 // -------------- GET OTP
 export const getEmailRequest = (data) => {
+  console.log('getEmailRequest', data);
   return {
     type: UserTypes.GET_EMAIL_REQUEST,
     payload: data,
@@ -344,6 +350,8 @@ export const getEmailRequest = (data) => {
 };
 
 export const getEmailSuccess = (data) => {
+  console.log('getEmailSuccess', data);
+
   return {
     type: UserTypes.GET_EMAIL_SUCCESS,
     payload: data,

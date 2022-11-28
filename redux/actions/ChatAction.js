@@ -127,6 +127,7 @@ export const sendMessagesFailure = (message) => {
 
 // -------------- UPDATE AVATAR
 export const sendImagesRequest = (data) => {
+  console.log('sendImagesRequest', data);
   return {
     type: ChatTypes.SEND_IMAGES_REQUEST,
     payload: data,
@@ -150,6 +151,7 @@ export const sendImagesFailure = (message) => {
 
 // -------------- SEND FILE
 export const sendFileRequest = (data) => {
+  console.log('sendFileRequest');
   return {
     type: ChatTypes.SEND_FILE_REQUEST,
     payload: data,

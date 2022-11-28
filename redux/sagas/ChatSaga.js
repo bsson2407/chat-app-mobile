@@ -76,6 +76,7 @@ function* getAllConversationByUserSaga(action) {
 }
 
 function* sendImagesSaga(action) {
+  console.log('sendImagesSaga', action.payload);
   try {
     const data = yield call(sendImage, action.payload);
     yield put(sendImagesSuccess(data));
@@ -86,6 +87,7 @@ function* sendImagesSaga(action) {
 
 function* sendFileSaga(action) {
   try {
+    console.log('sendFileSaga', sendFile);
     const data = yield call(sendFile, action.payload);
     yield put(sendFileSuccess(data));
   } catch (error) {

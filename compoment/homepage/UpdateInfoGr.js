@@ -13,9 +13,20 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import Ionicons from 'react-native-vector-icons/MaterialIcons';
 
 import * as ImagePicker from 'expo-image-picker';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  changeAvatarGroupRequest,
+  changeNameGroupRequest,
+} from '../../redux/actions/ChatAction';
 
 export default function UpdateInfoGrChat({ navigation }) {
+  const dispatch = useDispatch();
+
+  const { chatWith } = useSelector((state) => state.chat);
+  const { userCurrent } = useSelector((state) => state.user);
   const [img, setImg] = useState(null);
+  const [result, setResult] = useState(null);
+  const [name, setName] = useState(chatWith.name);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -24,19 +35,55 @@ export default function UpdateInfoGrChat({ navigation }) {
       aspect: [4, 3],
       quality: 1,
     });
+    setResult(result.assets[0]);
 
     if (!result.canceled) {
       setImg(result.assets[0].uri);
     }
   };
 
+  const onSubmit = async () => {
+    if (img) {
+      const formData = new FormData();
+      formData.append('idUser', userCurrent._id);
+      formData.append('idConversation', chatWith.idConversation);
+      let localUri = result.uri;
+      // setPhotoShow(localUri);
+      let filename = localUri.split('/').pop();
+
+      let match = /\.(\w+)$/.exec(filename);
+      let type = match ? `image/${match[1]}` : `image`;
+
+      formData.append('image', { uri: localUri, name: filename, type });
+      await dispatch(changeAvatarGroupRequest(formData));
+      // await dispatch(getUserByIdRequest(userCurrent._id));
+    }
+
+    const data = {
+      nameGroup: name,
+      idConversation: chatWith.idConversation,
+      idUser: userCurrent._id,
+    };
+
+    if (data) {
+      await dispatch(changeNameGroupRequest(data));
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.main}>
-        <Text style={styles.txtOTP}>Cập nhật thông tin</Text>
+        <Text style={styles.txtOTP}>Cập nhật thông tin nhóm</Text>
 
         <TouchableOpacity onPress={pickImage}>
-          <Image style={styles.infoImgUpdate} source={{ uri: img }} />
+          {img ? (
+            <Image style={styles.infoImgUpdate} source={{ uri: img }} />
+          ) : (
+            <Image
+              style={styles.infoImgUpdate}
+              source={{ uri: chatWith.avatar }}
+            />
+          )}
         </TouchableOpacity>
 
         <View
@@ -47,7 +94,11 @@ export default function UpdateInfoGrChat({ navigation }) {
           }}
         >
           <Text style={{ fontWeight: 'bold' }}>Tên:</Text>
-          <TextInput style={styles.inputText}></TextInput>
+          <TextInput
+            onChangeText={(e) => setName(e)}
+            defaultValue={chatWith.name}
+            style={styles.inputText}
+          ></TextInput>
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
           <TouchableOpacity
@@ -57,7 +108,10 @@ export default function UpdateInfoGrChat({ navigation }) {
             <Text>Hủy</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => navigation.navigate('InfoGrChat')}
+            onPress={() => {
+              onSubmit();
+              navigation.navigate('InfoGrChat');
+            }}
             style={styles.btnAll}
           >
             <Text>Xác nhận</Text>

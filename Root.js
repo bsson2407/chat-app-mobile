@@ -36,6 +36,9 @@ import SendCall from './compoment/homepage/callVideo/sendCall';
 import VideoCall from './compoment/homepage/callVideo/videoCall';
 import Peer from 'peerjs';
 import { ActionTypes } from './redux/types/ActionTypes';
+import FogotPassEmail from './compoment/homepage/FogotPassEmail';
+import FogotPassOTP from './compoment/homepage/FogotPassOTP';
+import FogotPassChange from './compoment/homepage/FogotPassChange';
 
 // Tab Screen names
 const homeName = 'Home';
@@ -116,6 +119,9 @@ const StackNavigator = () => (
     <Stack.Screen name="UpdateInfoMemberGr" component={UpdateInfoMemberGr} />
     <Stack.Screen name="SendCall" component={SendCall} />
     <Stack.Screen name="VideoCall" component={VideoCall} />
+    <Stack.Screen name="FogotPassEmail" component={FogotPassEmail} />
+    <Stack.Screen name="FogotPassOTP" component={FogotPassOTP} />
+    <Stack.Screen name="FogotPassChange" component={FogotPassChange} />
   </Stack.Navigator>
 );
 

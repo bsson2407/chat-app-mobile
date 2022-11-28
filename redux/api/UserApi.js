@@ -21,9 +21,6 @@ export const updateAvatar = (data) =>
     },
   });
 export const searchUser = (data) => axiosClient.post('/user/search', data);
-export const searchUserExist = (data) =>
-  axiosClient.post('/user/searchExist', data);
-export const addFriend = (data) => axiosClient.post('/user/invite', data);
 export const updateProfile = (data) => axiosClient.post('/user/update', data);
 export const getEmail = (data) => {
   return axiosClient.post('/user/sendmail', data);

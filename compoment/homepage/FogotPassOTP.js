@@ -7,40 +7,27 @@ import {
   TextInput,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
+import { checkOtpRequest } from '../../redux/actions/UserAction';
 import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
-import {
-  checkOtpRequest,
-  loginUserRequest,
-} from '../../redux/actions/UserAction';
-export default function Verify({ route, navigation }) {
+
+export default function FogotPassOTP({ route, navigation }) {
   const dispatch = useDispatch();
-  const [time, setTime] = useState(60);
+  const { email } = route.params;
   const [otp, setOtp] = useState('');
   const user = useSelector((state) => state.user);
   const { error } = user;
-  const { password, email } = route.params;
   const getOtpValue = async () => {
     const data = {
-      email: email.trim(),
+      email: email,
       otp: otp.trim(),
     };
-    const dataLogin = {
-      email: email.trim(),
-      password: password.trim(),
-    };
-
     await dispatch(
       checkOtpRequest(data, () => {
-        dispatch(
-          loginUserRequest(dataLogin, () => {
-            navigation.navigate('Hello');
-          })
-        );
+        navigation.navigate('FogotPassChange', { email: email.trim() });
       })
     );
   };
-
   return (
     <View style={styles.container}>
       <View style={styles.main}>
@@ -52,17 +39,20 @@ export default function Verify({ route, navigation }) {
             alignItems: 'center',
           }}
         >
-          <Text>Nhập mã: </Text>
-          <TextInput style={styles.inputText}></TextInput>
+          <Text style={{ fontWeight: 'bold' }}>Nhập mã: </Text>
+          <TextInput
+            onChangeText={(e) => setOtp(e)}
+            style={styles.inputText}
+          ></TextInput>
+        </View>
+        <View style={styles.txtRegex}>
+          <Text style={styles.txtRegexVal}>ABC</Text>
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Login')}
-            style={styles.btnAll}
-          >
-            <Text>Hủy</Text>
+          <TouchableOpacity style={styles.btnAll}>
+            <Text>Gửi lại</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={getOtpValue} style={styles.btnAll}>
+          <TouchableOpacity onPress={() => getOtpValue()} style={styles.btnAll}>
             <Text>Xác nhận</Text>
           </TouchableOpacity>
         </View>
@@ -109,5 +99,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
     fontSize: 20,
+  },
+
+  txtRegex: {
+    width: '100%',
+    marginTop: -20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  txtRegexVal: {
+    fontSize: 10,
+    color: 'red',
   },
 });

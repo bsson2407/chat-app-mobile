@@ -209,8 +209,6 @@ function* UserSaga() {
   yield takeEvery(UserTypes.REGISTER_USER_REQUEST, RegisterSaga);
   yield takeLatest(UserTypes.SEARCH_USER_REQUEST, SearchUserSaga);
 
-  yield takeLatest(UserTypes.SEARCH_USER_EXIST_REQUEST, SearchUserExistSaga);
-
   yield takeLatest(UserTypes.GET_USER_BY_ID_REQUEST, GetUserByIdSaga);
   yield takeLatest(UserTypes.GET_FRIEND_BY_ID_REQUEST, GetFriendByIdSaga);
 

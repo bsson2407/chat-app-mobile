@@ -15,7 +15,7 @@ import { useRoute } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/MaterialIcons';
 import { Video } from 'expo-av';
 import anh from '../Item/anh1.png';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import ImageView from 'react-native-image-viewing';
@@ -36,6 +36,7 @@ import { ActionTypes } from '../../redux/types/ActionTypes';
 
 const ChatBox = ({ navigation }) => {
   const dispatch = useDispatch();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { socket, peer } = useSelector((state) => state);
   const { userCurrent } = useSelector((state) => state.user);
@@ -50,9 +51,22 @@ const ChatBox = ({ navigation }) => {
   }, [chatWith]);
   const video = React.useRef(null);
   const [status, setStatus] = React.useState({});
-
+  const wait = (timeout) => {
+    // Defined the timeout function for testing purpose
+    return new Promise((resolve) => setTimeout(resolve, timeout));
+  };
+  const onRefresh = useCallback(() => {
+    // const timer = setTimeout(() => {
+    //   setIsRefreshing(true);
+    // }, 1000).then(() => setIsRefreshing(false));
+    // return () => clearTimeout(timer);
+    setIsRefreshing(true);
+    wait(2000).then(() => setIsRefreshing(false));
+    dispatch(getAllMessageByConversationRequest(chatWith.idConversation));
+  }, []);
   useEffect(() => {
     socket.on('newMessage', (newMessage) => {
+      console.log('newMessage');
       dispatch(getAllConversationByUserRequest(userCurrent._id));
       if (chatWith.idConversation === newMessage.idConversation) {
         dispatch(pushNewMesssgeToListMessage(newMessage));
@@ -80,25 +94,27 @@ const ChatBox = ({ navigation }) => {
       allowsMultipleSelection: true,
       selectionLimit: 5,
     });
+    console.log('result,', result.canceled);
+    if (!result.canceled) {
+      let formData = new FormData();
+      formData.append('idSender', userCurrent._id);
+      formData.append('idConversation', chatWith.idConversation);
 
-    let formData = new FormData();
-    formData.append('idSender', userCurrent._id);
-    formData.append('idConversation', chatWith.idConversation);
+      for (const fileImage of result.assets) {
+        if (fileImage) {
+          let localUri = fileImage.uri;
+          // setPhotoShow(localUri);
+          let filename = localUri.split('/').pop();
 
-    for (const fileImage of result.assets) {
-      if (fileImage) {
-        let localUri = fileImage.uri;
-        // setPhotoShow(localUri);
-        let filename = localUri.split('/').pop();
+          let match = /\.(\w+)$/.exec(filename);
+          let type = match ? `image/${match[1]}` : `image`;
 
-        let match = /\.(\w+)$/.exec(filename);
-        let type = match ? `image/${match[1]}` : `image`;
-
-        formData.append('files', { uri: localUri, name: filename, type });
+          formData.append('files', { uri: localUri, name: filename, type });
+        }
       }
-    }
 
-    await dispatch(sendImagesRequest(formData));
+      await dispatch(sendImagesRequest(formData));
+    }
   };
 
   const pickVideo = async () => {
@@ -107,28 +123,30 @@ const ChatBox = ({ navigation }) => {
       aspect: [4, 3],
       quality: 1,
     });
+    console.log('result,', result.canceled);
+    if (!result.canceled) {
+      let formData = new FormData();
+      formData.append('idSender', userCurrent._id);
+      formData.append('idConversation', chatWith.idConversation);
 
-    let formData = new FormData();
-    formData.append('idSender', userCurrent._id);
-    formData.append('idConversation', chatWith.idConversation);
+      let localUri = result.assets[0].uri;
+      // setPhotoShow(localUri);
+      let filename = localUri.split('/').pop();
 
-    let localUri = result.assets[0].uri;
-    // setPhotoShow(localUri);
-    let filename = localUri.split('/').pop();
+      let match = /\.(\w+)$/.exec(filename);
+      let type = match ? `image/${match[1]}` : `image`;
 
-    let match = /\.(\w+)$/.exec(filename);
-    let type = match ? `image/${match[1]}` : `image`;
+      // const pathName =
+      //   fileImage.uri.split('.')[fileImage.uri.split('.').length - 1];
+      // const dataImg = {
+      //   uri: fileImage.uri,
+      //   type: `${fileImage.type}/${pathName}`,
+      //   name: fileImage.uri.split('/')[fileImage.uri.split('/').length - 1],
+      // };
+      formData.append('file', { uri: localUri, name: filename, type });
 
-    // const pathName =
-    //   fileImage.uri.split('.')[fileImage.uri.split('.').length - 1];
-    // const dataImg = {
-    //   uri: fileImage.uri,
-    //   type: `${fileImage.type}/${pathName}`,
-    //   name: fileImage.uri.split('/')[fileImage.uri.split('/').length - 1],
-    // };
-    formData.append('file', { uri: localUri, name: filename, type });
-
-    await dispatch(sendFileRequest(formData));
+      await dispatch(sendFileRequest(formData));
+    }
   };
 
   const pickDocument = async () => {
@@ -166,67 +184,73 @@ const ChatBox = ({ navigation }) => {
       (userIdele) => userIdele == userCurrent._id
     );
     return (
-      <View style={styles.listChatSeft}>
-        {visible ? (
-          <ImageView
-            images={[{ uri: url }]}
-            imageIndex={0}
-            visible={visible}
-            onRequestClose={() => setVisible(false)}
-          />
+      <View>
+        {flag === -1 ? (
+          <View style={styles.listChatSeft}>
+            {visible ? (
+              <ImageView
+                images={[{ uri: url }]}
+                imageIndex={0}
+                visible={visible}
+                onRequestClose={() => setVisible(false)}
+              />
+            ) : (
+              ''
+            )}
+            <View style={styles.listChatBorderSeft}>
+              {item.type === 'TEXT' ? (
+                <Text style={styles.listChatTxt}>{item.message}</Text>
+              ) : item.type === 'IMAGE' ? (
+                <View>
+                  {item.urlImage.map((url, index) => {
+                    return (
+                      <TouchableOpacity
+                        key={url}
+                        onPress={() => handleViewingImage(url)}
+                      >
+                        <Image
+                          style={styles.listChatSendImg}
+                          source={{ uri: url }}
+                          resizeMode="contain"
+                          key={index}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              ) : item.type === 'VIDEO' ? (
+                <Video
+                  ref={video}
+                  style={styles.listChatSendImg}
+                  source={{
+                    uri: `${item.urlLink}`,
+                  }}
+                  useNativeControls
+                  resizeMode="contain"
+                  isLooping
+                  onPlaybackStatusUpdate={(status) => setStatus(() => status)}
+                />
+              ) : item.type === 'FILE' ? (
+                <FileMessage item={item} />
+              ) : item.type === 'RECALL' ? (
+                <Text
+                  style={{
+                    color: 'grey',
+                    fontSize: 14,
+                    paddingTop: 8,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  Tin nhắn đã được thu hồi
+                </Text>
+              ) : (
+                ''
+              )}
+            </View>
+          </View>
         ) : (
           ''
         )}
-        <View style={styles.listChatBorderSeft}>
-          {item.type === 'TEXT' ? (
-            <Text style={styles.listChatTxt}>{item.message}</Text>
-          ) : item.type === 'IMAGE' ? (
-            <View>
-              {item.urlImage.map((url, index) => {
-                return (
-                  <TouchableOpacity
-                    key={url}
-                    onPress={() => handleViewingImage(url)}
-                  >
-                    <Image
-                      style={styles.listChatSendImg}
-                      source={{ uri: url }}
-                      resizeMode="contain"
-                      key={index}
-                    />
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          ) : item.type === 'VIDEO' ? (
-            <Video
-              ref={video}
-              style={styles.listChatSendImg}
-              source={{
-                uri: `${item.urlLink}`,
-              }}
-              useNativeControls
-              resizeMode="contain"
-              isLooping
-              onPlaybackStatusUpdate={(status) => setStatus(() => status)}
-            />
-          ) : item.type === 'FILE' ? (
-            <FileMessage item={item} />
-          ) : item.type === 'RECALL' ? (
-            <Text
-              style={{
-                color: 'grey',
-                fontSize: 14,
-                paddingTop: 8,
-                fontStyle: 'italic',
-              }}
-            >
-              Tin nhắn đã được thu hồi
-            </Text>
-          ) : (
-            ''
-          )}
-        </View>
       </View>
     );
   };
@@ -323,73 +347,79 @@ const ChatBox = ({ navigation }) => {
       (userIdele) => userIdele == userCurrent._id
     );
     return (
-      <View style={styles.listChat}>
-        {visible ? (
-          <ImageView
-            images={[{ uri: url }]}
-            imageIndex={0}
-            visible={visible}
-            onRequestClose={() => setVisible(false)}
-          />
+      <View>
+        {flag === -1 ? (
+          <View style={styles.listChat}>
+            {visible ? (
+              <ImageView
+                images={[{ uri: url }]}
+                imageIndex={0}
+                visible={visible}
+                onRequestClose={() => setVisible(false)}
+              />
+            ) : (
+              ''
+            )}
+            <View style={styles.listChatImg}>
+              <Image
+                style={styles.listChatImgX}
+                source={{ uri: chatWith.idUser.avatar }}
+              />
+            </View>
+            <View style={styles.listChatBorder}>
+              {item.type === 'TEXT' ? (
+                <Text style={styles.listChatTxt}>{item.message}</Text>
+              ) : item.type === 'IMAGE' ? (
+                <View>
+                  {item.urlImage.map((url, index) => {
+                    return (
+                      <TouchableOpacity
+                        key={url}
+                        onPress={() => handleViewingImage(url)}
+                      >
+                        <Image
+                          style={styles.listChatSendImg}
+                          source={{ uri: url }}
+                          resizeMode="contain"
+                          key={index}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              ) : item.type === 'VIDEO' ? (
+                <Video
+                  ref={video}
+                  style={styles.listChatSendImg}
+                  source={{
+                    uri: `${item.urlLink}`,
+                  }}
+                  useNativeControls
+                  resizeMode="contain"
+                  isLooping
+                  onPlaybackStatusUpdate={(status) => setStatus(() => status)}
+                />
+              ) : item.type === 'FILE' ? (
+                <FileMessage item={item} />
+              ) : item.type === 'RECALL' ? (
+                <Text
+                  style={{
+                    color: 'grey',
+                    fontSize: 14,
+                    paddingTop: 8,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  Tin nhắn đã được thu hồi
+                </Text>
+              ) : (
+                ''
+              )}
+            </View>
+          </View>
         ) : (
           ''
         )}
-        <View style={styles.listChatImg}>
-          <Image
-            style={styles.listChatImgX}
-            source={{ uri: chatWith.idUser.avatar }}
-          />
-        </View>
-        <View style={styles.listChatBorder}>
-          {item.type === 'TEXT' ? (
-            <Text style={styles.listChatTxt}>{item.message}</Text>
-          ) : item.type === 'IMAGE' ? (
-            <View>
-              {item.urlImage.map((url, index) => {
-                return (
-                  <TouchableOpacity
-                    key={url}
-                    onPress={() => handleViewingImage(url)}
-                  >
-                    <Image
-                      style={styles.listChatSendImg}
-                      source={{ uri: url }}
-                      resizeMode="contain"
-                      key={index}
-                    />
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          ) : item.type === 'VIDEO' ? (
-            <Video
-              ref={video}
-              style={styles.listChatSendImg}
-              source={{
-                uri: `${item.urlLink}`,
-              }}
-              useNativeControls
-              resizeMode="contain"
-              isLooping
-              onPlaybackStatusUpdate={(status) => setStatus(() => status)}
-            />
-          ) : item.type === 'FILE' ? (
-            <FileMessage item={item} />
-          ) : item.type === 'RECALL' ? (
-            <Text
-              style={{
-                color: 'grey',
-                fontSize: 14,
-                paddingTop: 8,
-                fontStyle: 'italic',
-              }}
-            >
-              Tin nhắn đã được thu hồi
-            </Text>
-          ) : (
-            ''
-          )}
-        </View>
       </View>
     );
   };
@@ -406,42 +436,6 @@ const ChatBox = ({ navigation }) => {
     }
   };
 
-  // Call
-  const caller = (video) => {
-    const msg = {
-      sender: chatWith.idUser._id,
-      recipient: userCurrent._id,
-      username: chatWith.idUser.name,
-      video,
-    };
-    dispatch({ type: ActionTypes.CALL, payload: msg });
-  };
-
-  const callUser = (video) => {
-    const msg = {
-      peerId: '',
-      sender: userCurrent._id,
-      recipient: chatWith.idUser._id,
-      username: userCurrent.name,
-      video,
-    };
-
-    if (peer.open) {
-      msg.peerId = peer._id;
-    }
-
-    socket.emit('callUser', msg);
-  };
-
-  const handlePhoneCall = () => {
-    caller({ video: false });
-    callUser({ video: false });
-  };
-  const handleVideoCall = () => {
-    caller({ video: true });
-    callUser({ video: true });
-  };
-
   return (
     <View style={styles.container}>
       {/*chat header*/}
@@ -456,12 +450,6 @@ const ChatBox = ({ navigation }) => {
           </Text>
         </View>
         <View style={styles.findBoxRight}>
-          <TouchableOpacity onPress={() => handlePhoneCall()}>
-            <Ionicons style={styles.iconStyple} name="call" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleVideoCall()}>
-            <Ionicons style={styles.iconStyple} name="camera" />
-          </TouchableOpacity>
           {chatWith.type === 'single' && (
             <TouchableOpacity
               onPress={() => navigation.navigate('InfoRoomChat')}
@@ -479,6 +467,8 @@ const ChatBox = ({ navigation }) => {
       {/*chat main*/}
       <FlatList
         key="*"
+        refreshing={isRefreshing}
+        onRefresh={onRefresh}
         contentContainerStyle={{ flexDirection: 'column-reverse' }}
         inverted
         data={listMessage}
@@ -520,22 +510,23 @@ const ChatBox = ({ navigation }) => {
               </View>
             ) : item.sender === userCurrent._id ? (
               renderMessageMe(item)
+            ) : chatWith.type === 'single' ? (
+              renderMessageForSingle(item)
             ) : (
-              (chatWith.type === 'single' && renderMessageForSingle(item)) ||
-              (chatWith.type === 'group' && renderMessageForGroup(item))
+              renderMessageForGroup(item)
             )}
           </View>
         )}
       />
       {/*chat footer*/}
       <KeyboardAvoidingView style={styles.inputView}>
-        <TouchableOpacity onPress={pickDocument}>
+        <TouchableOpacity onPress={() => pickDocument()}>
           <Ionicons style={styles.iconStypleS} name="attach-file" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={pickImage}>
+        <TouchableOpacity onPress={() => pickImage()}>
           <Ionicons style={styles.iconStypleS} name="image" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={pickVideo}>
+        <TouchableOpacity onPress={() => pickVideo()}>
           <Ionicons style={styles.iconStypleS} name="video-library" />
         </TouchableOpacity>
         <TextInput
@@ -643,6 +634,11 @@ const styles = StyleSheet.create({
   listChatSendImg: {
     width: 230,
     height: 350,
+  },
+  listChatSendImgs: {
+    width: 133,
+    height: 180,
+    margin: 2,
   },
   listChatSendVideo: {
     justifyContent: 'center',

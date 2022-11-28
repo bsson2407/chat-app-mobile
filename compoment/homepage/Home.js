@@ -45,8 +45,6 @@ export default function Home({ navigation }) {
       setRefeshTokenLocalStorage(refeshToken);
     });
   }, []);
-  console.log('tokenLocalStorage', tokenLocalStorage);
-  console.log('refeshTokenLocalStorage', refeshTokenLocalStorage);
 
   useEffect(() => {
     const getToken = async () => {
@@ -60,11 +58,8 @@ export default function Home({ navigation }) {
           1,
           tokenLocalStorage.length - 1
         );
-        console.log('token', token);
-        console.log('refeshToken', refeshToken);
 
         const decoded = jwt_decode(token);
-        console.log('decoded', decoded);
         dispatch(getUserByIdRequest(decoded._id));
         if (decoded.exp < Date.now() / 1000) {
           dispatch(getNewTokenRequest({ refeshToken }));

@@ -7,44 +7,27 @@ import {
   TextInput,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import {
-  checkOtpRequest,
-  loginUserRequest,
+  clearUserState,
+  getEmailRequest,
+  saveEmailUser,
 } from '../../redux/actions/UserAction';
-export default function Verify({ route, navigation }) {
+
+export default function FogotPassEmail({ navigation }) {
   const dispatch = useDispatch();
-  const [time, setTime] = useState(60);
-  const [otp, setOtp] = useState('');
-  const user = useSelector((state) => state.user);
-  const { error } = user;
-  const { password, email } = route.params;
-  const getOtpValue = async () => {
-    const data = {
-      email: email.trim(),
-      otp: otp.trim(),
-    };
-    const dataLogin = {
-      email: email.trim(),
-      password: password.trim(),
-    };
 
-    await dispatch(
-      checkOtpRequest(data, () => {
-        dispatch(
-          loginUserRequest(dataLogin, () => {
-            navigation.navigate('Hello');
-          })
-        );
-      })
-    );
+  const [email, setEmail] = useState('');
+  const onSubmit = async () => {
+    await dispatch(clearUserState());
+
+    await dispatch(getEmailRequest({ email }));
   };
-
   return (
     <View style={styles.container}>
       <View style={styles.main}>
-        <Text style={styles.txtOTP}>Xác nhận mã OTP</Text>
+        <Text style={styles.txtOTP}>Nhập Email của bạn</Text>
         <View
           style={{
             flexDirection: 'row',
@@ -52,17 +35,22 @@ export default function Verify({ route, navigation }) {
             alignItems: 'center',
           }}
         >
-          <Text>Nhập mã: </Text>
-          <TextInput style={styles.inputText}></TextInput>
+          <TextInput
+            onChangeText={(e) => setEmail(e)}
+            style={styles.inputText}
+          ></TextInput>
+        </View>
+        <View style={styles.txtRegex}>
+          <Text style={styles.txtRegexVal}>ABC</Text>
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
           <TouchableOpacity
-            onPress={() => navigation.navigate('Login')}
+            onPress={() => {
+              onSubmit();
+              navigation.navigate('FogotPassOTP', { email: email.trim() });
+            }}
             style={styles.btnAll}
           >
-            <Text>Hủy</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={getOtpValue} style={styles.btnAll}>
             <Text>Xác nhận</Text>
           </TouchableOpacity>
         </View>
@@ -80,7 +68,7 @@ const styles = StyleSheet.create({
   },
   main: {
     width: '90%',
-    height: 200,
+    height: 170,
     backgroundColor: 'white',
     borderRadius: 30,
     justifyContent: 'center',
@@ -109,5 +97,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
     fontSize: 20,
+  },
+
+  txtRegex: {
+    width: '100%',
+    marginTop: -20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 20,
+  },
+  txtRegexVal: {
+    fontSize: 10,
+    color: 'red',
   },
 });

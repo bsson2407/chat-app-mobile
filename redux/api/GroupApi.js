@@ -15,7 +15,12 @@ export const postCreateGroup = (data) =>
   axiosClient.post(`/group/create`, data);
 
 export const postChangeAvatar = (data) =>
-  axiosClient.post(`/group/changeavatar`, data);
+  axiosClient.post(`/group/changeavatar`, data, {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 export const postChangeName = (data) =>
   axiosClient.post(`/group/changename`, data);
 export const postDeleteGroup = (data) =>

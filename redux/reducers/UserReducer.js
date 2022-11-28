@@ -84,28 +84,6 @@ export const UserReducer = (state = initialState, action) => {
         error: action.payload,
       };
     }
-    //-------------- SERCH USER BY PHONE OR EMAIL
-    case UserTypes.SEARCH_USER_EXIST_REQUEST: {
-      return {
-        ...state,
-        isLoading: true,
-      };
-    }
-    case UserTypes.SEARCH_USER_EXIST_SUCCESS: {
-      return {
-        ...state,
-        isLoading: false,
-        error: null,
-        userExist: action.payload,
-      };
-    }
-    case UserTypes.SEARCH_USER_EXIST_FAILURE: {
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload,
-      };
-    }
     // ------------- GET OTP BY EMAIL
     case UserTypes.GET_EMAIL_REQUEST: {
       return {
@@ -373,14 +351,6 @@ export const UserReducer = (state = initialState, action) => {
       return {
         ...state,
         emailUserResetPass: action.payload,
-      };
-    }
-
-    // ------------- SAVE EMAIL USER
-    case UserTypes.SAVE_EMAIL_USER_REGISTER: {
-      return {
-        ...state,
-        emailUserRegister: action.payload,
       };
     }
 

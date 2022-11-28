@@ -7,57 +7,57 @@ import {
   TextInput,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import {
+  loginUserRequest,
+  updatePasswordRequest,
+} from '../../redux/actions/UserAction';
 import { useState } from 'react';
-import { updatePasswordRequest } from '../../redux/actions/UserAction';
 
-export default function UpdatePass({ navigation }) {
+export default function FogotPassChange({ route, navigation }) {
   const dispatch = useDispatch();
-  const { userCurrent } = useSelector((state) => state.user);
+
   const [pass, setPass] = useState('');
-  const [newPass, setNewPass] = useState('');
   const [repeatPass, setRepeatPass] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  console.log('newPass', newPass);
-  console.log('repeatPass', repeatPass);
-  const onSubmit = async () => {
-    console.log('userCurrent.password', userCurrent.password);
+  const { email } = route.params;
 
-    if (pass === userCurrent.password) {
-      if (newPass === repeatPass) {
-        if (newPass.length < 8) {
-          setErrorMessage('Mật khẩu phải tối thiểu 8 kí tự');
-          setTimeout(() => {
-            setErrorMessage('');
-          }, 2000);
-          return;
-        } else {
-          if (newPass === userCurrent.password) {
-            setErrorMessage('Không nhập mật khẩu cũ');
-            setTimeout(() => {
-              setErrorMessage('');
-            }, 2000);
-          } else {
-            const newData = {
-              email: userCurrent.email,
-              newPassword: newPass,
-            };
-            dispatch(updatePasswordRequest(newData, () => {}));
-          }
-        }
-      } else {
-        setErrorMessage('Mật khẩu không khớp');
+  const onSubmit = () => {
+    if (pass.trim() === repeatPass.trim()) {
+      if (pass.length < 8) {
+        setErrorMessage('Mật khẩu phải tối thiểu 8 kí tự');
         setTimeout(() => {
           setErrorMessage('');
         }, 2000);
+        return;
+      } else {
+        const newData = {
+          email: email.trim(),
+          newPassword: pass.trim(),
+        };
+        dispatch(
+          updatePasswordRequest(newData, () => {
+            const dataLogin = {
+              email: email.trim(),
+              password: pass.trim(),
+            };
+            console.log('dataLogin', dataLogin);
+            dispatch(
+              loginUserRequest(dataLogin, () => {
+                navigation.navigate('Home');
+              })
+            );
+          })
+        );
       }
     } else {
-      setErrorMessage('Sai mật khẩu hiện tại');
+      setErrorMessage('Mật khẩu không khớp');
       setTimeout(() => {
         setErrorMessage('');
       }, 2000);
     }
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.main}>
@@ -69,23 +69,10 @@ export default function UpdatePass({ navigation }) {
             alignItems: 'center',
           }}
         >
-          <Text style={{ fontWeight: 'bold' }}>Mật khẩu hiện tại:</Text>
-          <TextInput
-            onChangeText={(e) => setPass(e)}
-            style={styles.inputText}
-          ></TextInput>
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
           <Text style={{ fontWeight: 'bold' }}>Mật khẩu mới: </Text>
           <TextInput
-            onChangeText={(e) => setNewPass(e)}
             style={styles.inputText}
+            onChangeText={(e) => setPass(e)}
           ></TextInput>
         </View>
         <View
@@ -96,17 +83,18 @@ export default function UpdatePass({ navigation }) {
           }}
         >
           <Text style={{ fontWeight: 'bold' }}>Nhập lại mật khẩu mới: </Text>
-
           <TextInput
-            onChangeText={(e) => setRepeatPass(e)}
             style={styles.inputText}
+            onChangeText={(e) => setRepeatPass(e)}
           ></TextInput>
         </View>
+
         {errorMessage && (
           <View style={styles.txtRegex}>
             <Text style={styles.txtRegexVal}>{errorMessage}</Text>
           </View>
         )}
+
         <View
           style={{
             flexDirection: 'row',
@@ -114,12 +102,6 @@ export default function UpdatePass({ navigation }) {
             width: '100%',
           }}
         >
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Info')}
-            style={styles.btnAll}
-          >
-            <Text>Hủy</Text>
-          </TouchableOpacity>
           <TouchableOpacity onPress={() => onSubmit()} style={styles.btnAll}>
             <Text>Xác nhận</Text>
           </TouchableOpacity>
@@ -138,26 +120,13 @@ const styles = StyleSheet.create({
   },
   main: {
     width: '90%',
-    height: 300,
+    height: 240,
     backgroundColor: 'white',
     borderRadius: 30,
     justifyContent: 'flex-start',
     borderWidth: 1,
     alignItems: 'flex-end',
   },
-  txtRegex: {
-    width: '100%',
-    marginTop: -10,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    marginLeft: 120,
-    marginBottom: 2,
-  },
-  txtRegexVal: {
-    fontSize: 13,
-    color: 'red',
-  },
-
   btnAll: {
     width: '40%',
     height: 40,
@@ -183,5 +152,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 25,
     padding: 10,
+  },
+
+  txtRegex: {
+    width: '100%',
+    marginTop: -20,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    marginRight: 20,
+  },
+  txtRegexVal: {
+    fontSize: 10,
+    color: 'red',
   },
 });

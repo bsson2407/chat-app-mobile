@@ -5,11 +5,13 @@ import {
   View,
   TouchableOpacity,
   TextInput,
+  Image,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
+  clearUserState,
   getUserByIdRequest,
   loginUserRequest,
 } from '../redux/actions/UserAction';
@@ -22,7 +24,9 @@ export default function Login({ navigation }) {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
   const { error } = user;
-
+  const handleClearUserState = () => {
+    dispatch(clearUserState());
+  };
   const onSubmit = () => {
     // dispatch
     // loginUse
@@ -39,18 +43,26 @@ export default function Login({ navigation }) {
   };
   return (
     <View style={styles.container}>
-      <Text style={styles.bigText}>Welcome again!</Text>
-      <Text style={styles.smallText}>Let’s help you to sign in..</Text>
+      <Image
+        style={{
+          width: 150,
+          height: 150,
+          marginBottom: 30,
+          borderRadius: 50,
+        }}
+        source={require('../assets/logo.png')}
+      />
       <TextInput
         value={email}
         onChangeText={(value) => {
           setEmail(value);
         }}
         style={styles.inputText}
-        placeholder={'Nhập Email của bạn'}
+        placeholder={'Nhập email'}
       ></TextInput>
       <TextInput
         value={password}
+        secureTextEntry={true}
         onChangeText={(value) => {
           setPassword(value);
         }}
@@ -60,18 +72,24 @@ export default function Login({ navigation }) {
       <View style={styles.txtRegex}>
         <Text style={styles.txtRegexVal}>{error}</Text>
       </View>
-      <TouchableOpacity style={styles.txtquenmk}>
+      <TouchableOpacity
+        style={styles.txtquenmk}
+        onPress={() => {
+          handleClearUserState();
+          navigation.navigate('FogotPassEmail');
+        }}
+      >
         <Text style={{ fontWeight: 'bold' }}>Quên mật khẩu?</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.btnAll} onPress={onSubmit}>
-        <Text>Login</Text>
+        <Text>Đăng nhập</Text>
       </TouchableOpacity>
       <Text style={styles.txtOr}>________________ OR _________________</Text>
       <TouchableOpacity
         onPress={() => navigation.navigate('Register')}
         style={styles.btnAll}
       >
-        <Text>Register</Text>
+        <Text>Đăng ký</Text>
       </TouchableOpacity>
     </View>
   );
